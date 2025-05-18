@@ -9,9 +9,8 @@ namespace Gameplay
         [SerializeField] private InputActionReference moveInput;
         [SerializeField] private InputActionReference jumpInput;
         [SerializeField] private float airborneSpeedMultiplier = .5f;
-        //TODO: This booleans are not flexible enough. If we want to have a third jump or other things, it will become a hazzle.
-        private bool _isJumping;
-        private bool _isDoubleJumping;
+        [SerializeField] private int maxJumps = 2;
+        private int _currentJumps;
         private Character _character;
         private Coroutine _jumpCoroutine;
 
@@ -43,24 +42,16 @@ namespace Gameplay
         private void HandleMoveInput(InputAction.CallbackContext ctx)
         {
             var direction = ctx.ReadValue<Vector2>().ToHorizontalPlane();
-            if (_isJumping || _isDoubleJumping)
+            if (_currentJumps > 0)
                 direction *= airborneSpeedMultiplier;
             _character?.SetDirection(direction);
         }
 
         private void HandleJumpInput(InputAction.CallbackContext ctx)
         {
-            //TODO: This function is barely readable. We need to refactor how we control the jumping
-            if (_isJumping)
-            {
-                if (_isDoubleJumping)
-                    return;
-                RunJumpCoroutine();
-                _isDoubleJumping = true;
-                return;
-            }
+            if(_currentJumps >= maxJumps) return;
             RunJumpCoroutine();
-            _isJumping = true;
+            _currentJumps++;
         }
 
         private void RunJumpCoroutine()
@@ -73,13 +64,8 @@ namespace Gameplay
         private void OnCollisionEnter(Collision other)
         {
             foreach (var contact in other.contacts)
-            {
                 if (Vector3.Angle(contact.normal, Vector3.up) < 5)
-                {
-                    _isJumping = false;
-                    _isDoubleJumping = false;
-                }
-            }
+                    _currentJumps = 0;
         }
     }
 }
