@@ -9,6 +9,14 @@ namespace Excercise1
 
         protected virtual void OnEnable()
         {
+            //acceder con singleton
+            CharacterService charService = CharacterService.instance;
+            if(charService) charService.TryAddCharacter(id, this);
+            else
+            {
+                string _logTag = $"{name}({nameof(Character).Colored("#555555")}):";
+                Debug.LogError($"{_logTag} CharacterService not found!");
+            }
             //TODO: Add to CharacterService. The id should be the given serialized field. 
         }
 

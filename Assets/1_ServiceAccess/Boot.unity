@@ -300,13 +300,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7627b960d8da014194f4f2fc9d3a11f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scenes:
+  prioritaryScenes:
   - scene: {fileID: 102900000, guid: 3c8a32b3f6a379d4dab4a1c349d9d718, type: 3}
     <Index>k__BackingField: 1
+    <Name>k__BackingField: 
+  scenes:
   - scene: {fileID: 102900000, guid: 960b66e9ebabc434582161d4b384b7d0, type: 3}
     <Index>k__BackingField: 2
+    <Name>k__BackingField: 
   - scene: {fileID: 102900000, guid: 665cbb5fdd3d5a045b9fa479327f765f, type: 3}
     <Index>k__BackingField: 3
+    <Name>k__BackingField: 
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

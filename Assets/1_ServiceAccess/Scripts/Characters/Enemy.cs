@@ -19,8 +19,10 @@ namespace Excercise1
         protected override void OnEnable()
         {
             base.OnEnable();
-            //TODO: Get the reference to the player.
-            if (_player == null)
+            
+            //Try get player, if not found log error
+            CharacterService charService = CharacterService.instance;
+            if(!(charService && CharacterService.instance.TryGetCharacter(playerId, out _player)))
                 Debug.LogError($"{_logTag} Player not found!");
         }
 
