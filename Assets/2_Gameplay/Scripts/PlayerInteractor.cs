@@ -9,7 +9,7 @@ namespace Gameplay
     {
         [SerializeField] private InputActionReference interactInput;
         [SerializeField] private TMP_Text interactionText;
-        private IInteractable _interactable;
+        private IInteractable _interactable; //Strategy Pattern
         private string _textFormat = string.Empty;
 
         private void Awake()

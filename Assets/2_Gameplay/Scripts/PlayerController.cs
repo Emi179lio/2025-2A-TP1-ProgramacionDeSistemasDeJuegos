@@ -11,7 +11,7 @@ namespace Gameplay
         [SerializeField] private float airborneSpeedMultiplier = .5f;
         [SerializeField] private int maxJumps = 2;
         private int _currentJumps;
-        private Character _character;
+        private Character _character; //Decorator Pattern
         private Coroutine _jumpCoroutine;
 
         private void Awake()
