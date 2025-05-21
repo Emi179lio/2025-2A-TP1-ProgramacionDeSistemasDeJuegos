@@ -1,8 +1,9 @@
 DECORATOR
-El PlayerController del ejercicio 2 usa el patron de diseño Decorator con la clase Character.
-Esto le permite cambiar el tipo de Character que usa sin necesidad de grandes modificaciones al script. De esta forma puede hacer uso de distintas versiones de las funciones (por ejemplo, salto), dependiendo de que tipo de Character este usando.
-Para que esto se mantenga así, futuros métodos como climb o swim también deberían realizarse de la misma forma que walk y jump (PlayerController recibe el evento, y le pide a Character que ejecute el método)
+No hay script que cumpla con las caracteristicas del patron Decorator
 
 STRATEGY
 El PlayerInteractor del ejercicio 2 usa el patron de diseño Strategy con las clases IInteractable
 Esto le permite que, dependiendo de con que este interactuando en ese momento, se llame un método u otro, siempre a travez del interactable con el que está interactuando (de no haber interactable, no se ejecuta nada)
+El PlayerInteractable es el context, puede settear y ejecutar strategies (asigna un IInteractable como la strategy actual cuando se choca con él,  y lo ejecuta al recibir el input del player.)
+IInteractable es el strategy abstracto 
+Pistol, Heal, etc son los strategy concretos, son los que existen en escena y el player puede usar
