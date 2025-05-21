@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -39,7 +38,7 @@ namespace Gameplay
         [SerializeField] private int maxJumps = 2;
         List<Action> actions;
         private int _currentJumps;
-        private Character _character; //Decorator Pattern
+        private Character _character;
         private Coroutine _jumpCoroutine;
 
         private void Awake()

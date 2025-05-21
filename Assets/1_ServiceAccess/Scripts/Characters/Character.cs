@@ -22,7 +22,14 @@ namespace Excercise1
 
         protected virtual void OnDisable()
         {
-            //TODO: Remove from CharacterService.
+            //acceder con singleton
+            CharacterService charService = CharacterService.instance;
+            if(charService) charService.TryRemoveCharacter(id);
+            else
+            {
+                string _logTag = $"{name}({nameof(Character).Colored("#555555")}):";
+                Debug.LogError($"{_logTag} id not found!");
+            }
         }
     }
 }
