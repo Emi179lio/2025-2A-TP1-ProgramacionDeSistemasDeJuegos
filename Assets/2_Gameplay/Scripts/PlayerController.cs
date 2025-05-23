@@ -1,96 +1,74 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Gameplay
 {
-    [RequireComponent(typeof(Character))]
     public class PlayerController : MonoBehaviour
     {
-        [System.Serializable]
-        class Action
-        {
-            [SerializeField] InputActionReference input;
-            public System.Action<InputAction.CallbackContext> onInput;
-            public System.Action<Collision> onCollisionEnter;
-
-            public void Connect(bool b)
-            {
-                if (!input) return;
-                
-                if (b)
-                {
-                    input.action.started += onInput;
-                    input.action.performed += onInput;
-                    input.action.canceled += onInput;
-                }
-                else
-                {
-                    input.action.started -= onInput;
-                    input.action.performed -= onInput;
-                    input.action.canceled -= onInput;
-                }
-            }
-        }
-        [SerializeField] private Action move;
-        [SerializeField] private Action jump;
-        [SerializeField] private float airborneSpeedMultiplier = .5f;
-        [SerializeField] private int maxJumps = 2;
-        List<Action> actions;
-        private int _currentJumps;
-        private Character _character;
-        private Coroutine _jumpCoroutine;
+        [SerializeField] Actions.MoveDecorator move;
+        [SerializeField] Actions.JumpDecorator jump;
+        [SerializeField] Rigidbody rb;
+        Actions.ActionDecorator _actionStack;
+        System.Action<IEnumerator, string> routineStarter;
+        System.Action<string> routineStopper;
+        Dictionary<string, Coroutine> coroutinesByID;
+        
 
         private void Awake()
         {
-            _character = GetComponent<Character>();
-            
-            actions = new List<Action>();
-            
+            List<Actions.ActionDecorator> actions = new List<Actions.ActionDecorator>();
             actions.Add(move);
-            move.onInput += (ctx) =>
-            {
-                var direction = ctx.ReadValue<Vector2>().ToHorizontalPlane();
-                if (_currentJumps > 0)
-                    direction *= airborneSpeedMultiplier;
-                _character?.SetDirection(direction);
-            };
-            
             actions.Add(jump);
-            jump.onInput += (ctx) =>
-            {
-                if (ctx.canceled || ctx.started) return;
-                if (_currentJumps >= maxJumps) return;
-                if (_jumpCoroutine != null)
-                    StopCoroutine(_jumpCoroutine);
-                _jumpCoroutine = StartCoroutine(_character.Jump());
-                _currentJumps++;
-            };
-            jump.onCollisionEnter += (c) =>
-            {
-                List<ContactPoint> cPoints = new List<ContactPoint>();
-                c.GetContacts(cPoints);
-                for (var index = 0; index < cPoints.Count; index++)
-                    if (Vector3.Angle(cPoints[index].normal, Vector3.up) < 5)
-                        _currentJumps = 0;
-            };
-        }
 
-        private void OnEnable()
-        {
-            for (int i = 0; i < actions.Count; i++)
-                actions[i].Connect(true);
-        }
-        private void OnDisable()
-        {
-            for (int i = 0; i < actions.Count; i++)
-                actions[i].Connect(false);
-        }
+            for (int i = 1; i < actions.Count; i++)
+            {
+                _actionStack = actions[i]; //update current
+                _actionStack.SetSource(actions[i-1]); //set previous as source
+            }
+            
+            if(actions.Count == 1) _actionStack = actions[0];
+            
+            _actionStack.SetTopAction(null);
 
-        void OnCollisionEnter(Collision other)
-        {
-            for (int i = 0; i < actions.Count; i++)
-                actions[i].onCollisionEnter?.Invoke(other);
+            Actions.ActionReferences refs = new Actions.ActionReferences
+            {
+                transform = transform, rb = rb
+            };
+            _actionStack.SetReferences(refs);
+
+            coroutinesByID = new Dictionary<string, Coroutine>();
+            routineStarter += (ie, id) =>
+            {
+                Coroutine routine = StartCoroutine(ie);
+                if(coroutinesByID.TryAdd(id, routine))
+                    _actionStack.SetRoutine(routine, id);
+            };
+            routineStopper += (id) =>
+            {
+                if (coroutinesByID.TryGetValue(id, out Coroutine routine))
+                {
+                    StopCoroutine(routine);
+                    coroutinesByID.Remove(id);
+                }
+            };
+            _actionStack.SetRoutineStarter(routineStarter);
+            _actionStack.SetRoutineStopper(routineStopper);
+
+            _actionStack.OnAwake();
         }
+        void Start() => _actionStack.OnStart();
+        void Update() => _actionStack.OnUpdate(Time.deltaTime);
+        void FixedUpdate() => _actionStack.OnFixedUpdate(Time.fixedDeltaTime);
+        void LateUpdate() => _actionStack.OnUpdate(Time.deltaTime);
+        void OnEnable() => _actionStack.OnEnable();
+        void OnDisable() => _actionStack.OnEnable();
+        void OnDestroy() => _actionStack.OnEnable();
+        void OnCollisionEnter(Collision other) => _actionStack.OnCollisionEnter(other);
+        void OnCollisionStay(Collision other) => _actionStack.OnCollisionStay(other);
+        void OnCollisionExit(Collision other) => _actionStack.OnCollisionExit(other);
+        void OnTriggerEnter(Collider other) => _actionStack.OnTriggerEnter(other);
+        void OnTriggerStay(Collider other) => _actionStack.OnTriggerStay(other);
+        void OnTriggerExit(Collider other) => _actionStack.OnTriggerExit(other);
     }
 }
